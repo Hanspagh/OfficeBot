@@ -12,7 +12,13 @@ defmodule Officebot.Coffee do
   def handle_event(message = %{type: "message"}, slack, state) do
     if mention_me?(message.text, slack.me.id) do
       case parse_message(message.text) do
-        :hi ->send_message("Hello good sir!", message.channel, slack)
+        :love -> send_message("Stop it, you are being too sweet", message.channel, slack)
+        {:ok, state}
+        :openhouse -> send_message(get_open_house_rating(), message.channel, slack)
+        {:ok, state}
+        :joke -> send_message(get_joke(), message.channel, slack)
+        {:ok, state}
+        :hi -> send_message("Hello good sir!", message.channel, slack)
         {:ok, state}
         :none ->send_message("I didn't quite get that", message.channel, slack)
         {:ok, state}
@@ -23,19 +29,44 @@ defmodule Officebot.Coffee do
         :coffee -> send_message("Lets see...", message.channel, slack)
         send_message(who_made_coffee_already(state), message.channel, slack)
         new_state = check_state(state, message.channel, slack)
-        send_message("Soooooooo I pick.....", message.channel, slack)
-        send_message("Give me a sec, I wil go ask my manager.....", message.channel, slack)
+        send_message("Soooooooo who is it gonna be????", message.channel, slack)
+        send_message("Give me a sec, I will go ask my manager.....", message.channel, slack)
         send_message("I pick.....", message.channel, slack)
         person = pick_random_person(new_state)
         send_message(person, message.channel, slack)
         {:ok, update_state(new_state,person)}
       end
     else
+      Logger.debug(message.text)
       {:ok, state}
     end
   end
 
   def handle_event(_, _, state), do: {:ok, state}
+
+
+  defp get_open_house_rating() do
+    with {:ok, response} <- HTTPoison.get("https://itunes.apple.com/search?term=openhouse%20by%20sunday&country=dk&entity=software"),
+    {:ok, json} <- JSX.decode response.body do
+      app = List.first json["results"]
+      "OpenHouse's current avg. rating is #{app["averageUserRating"]}, rated by #{app["userRatingCount"]} people"
+    else
+      :error -> "Woops, Something went wrong"
+    end
+
+
+  end
+
+  defp get_joke() do
+
+    with {:ok, response} <- HTTPoison.get("http://tambal.azurewebsites.net/joke/random"),
+    {:ok, json} <- JSX.decode response.body do
+      json["joke"]
+    else
+      :error -> "Woops, Something went wrong"
+    end
+
+  end
 
   defp check_state(%{free: free}, channel, slack) when length(free) == 0  do
     reset(channel, slack)
@@ -82,16 +113,19 @@ defmodule Officebot.Coffee do
   end
 
   defp mention_me?(message, my_id) do
-    message =~ ~r/^.*<@#{my_id}>:?.*$/ || message =~ ~r/^.*office.*$/ || message =~ ~r/^.*bot.*$/
+    message =~ ~r/^.*<@#{my_id}>:?.*$/ || message =~ ~r/^.*office.*$/ || message =~ ~r/^.*bot.*$/i
   end
 
   defp parse_message(message) do
     cond do
       message =~ ~r/^.*made.*$/i -> :made
-      message =~ ~r/^.*hi.*$/i -> :hi
+      message =~ ~r/^.*love.*$/i -> :love
+      message =~ ~r/^.*openhouse.*$/i -> :openhouse
       message =~ ~r/^.*coffee.*$/i -> :coffee
       message =~ ~r/^.*kaffe.*$/i -> :coffee
       message =~ ~r/^.*reset.*$/i -> :reset
+      message =~ ~r/^.*joke.*$/i -> :joke
+      message =~ ~r/^.*hi.*$/i -> :hi
       true -> :none
     end
 
