@@ -1,1 +1,1 @@
-worker: iex -S mix
+worker: mix run --no-halt
