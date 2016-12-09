@@ -1,1 +1,1 @@
-iex -S mix
+worker: iex -S mix
