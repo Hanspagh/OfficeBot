@@ -5,4 +5,4 @@ use Mix.Config
 config :officebot,
   token: System.get_env("SLACK_TOKEN")
 
-import_config "secret.exs"
+import_config "secret*.exs"
