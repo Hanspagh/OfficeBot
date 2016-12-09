@@ -2,31 +2,43 @@ defmodule Officebot.Coffee do
   require Logger
   use Slack
 
-  @start_state %{:free => ["Anders", "Kristoffer", "Katrine", "Hans"], :used => []}
+  @start_state %{:free => ["Anders", "Kristoffer", "Jonas", "Katrine", "Hans"], :used => []}
+
+
 
   def handle_connect(slack, state) do
     IO.puts "Connected as #{slack.me.name}"
+    #IO.puts slack.channels
+    #Logger.debug(slack.channels)
+    send_message("༼ つ ◕_◕ ༽つ OfficeBot is here to save the day", "#general", slack)
     {:ok, state}
   end
 
   def handle_event(message = %{type: "message"}, slack, state) do
     if mention_me?(message.text, slack.me.id) do
       case parse_message(message.text) do
-        :love -> send_message("Stop it, you are being too sweet", message.channel, slack)
+        {:exclude, person} ->
+        case update_state(state,person) do
+            {:ok, new_state} -> send_message("It seems like #{person} already made coffee today", message.channel, slack)
+                                {:ok, new_state}
+            {:error, error_message} -> send_message(error_message, message.channel, slack)
+                                {:ok, state}
+        end
+        :love -> send_message("༼ つ ◕_◕ ༽つ Stop it, you are being too sweet", message.channel, slack)
         {:ok, state}
         :openhouse -> send_message(get_open_house_rating(), message.channel, slack)
         {:ok, state}
         :joke -> send_message(get_joke(), message.channel, slack)
         {:ok, state}
-        :hi -> send_message("Hello good sir!", message.channel, slack)
+        :hi -> send_message("༼ つ ◕_◕ ༽つ Hello good sir!", message.channel, slack)
         {:ok, state}
-        :none ->send_message("I didn't quite get that", message.channel, slack)
+        :none ->send_message("༼ つ ◕_◕ ༽つ I didn't quite get that", message.channel, slack)
         {:ok, state}
         :made -> send_message(who_made_coffee_already(state), message.channel, slack)
         {:ok, state}
         :reset ->new_state = reset(message.channel, slack)
         {:ok, new_state}
-        :coffee -> send_message("Lets see...", message.channel, slack)
+        :coffee -> send_message("༼ つ ◕_◕ ༽つ Lets see...", message.channel, slack)
         send_message(who_made_coffee_already(state), message.channel, slack)
         new_state = check_state(state, message.channel, slack)
         send_message("Soooooooo who is it gonna be????", message.channel, slack)
@@ -86,9 +98,13 @@ defmodule Officebot.Coffee do
   end
 
   defp update_state(%{free: free, used: used}, person) do
-    free = List.delete(free, person)
-    used = used ++ [person]
-    %{free: free, used: used}
+    if(Enum.member?(free, person)) do
+      free = List.delete(free, person)
+      used = used ++ [person]
+      {:ok, %{free: free, used: used}}
+    else
+      {:error, "The person dosn't exists"}
+    end
   end
 
 
@@ -118,6 +134,9 @@ defmodule Officebot.Coffee do
 
   defp parse_message(message) do
     cond do
+      message =~ ~r/.*exclude ([a-z]*).*$/i ->
+              res = Regex.run(~r/.*exclude ([a-z]*).*$/i, message)
+              {:exclude, Enum.at(res, 1)}
       message =~ ~r/^.*made.*$/i -> :made
       message =~ ~r/^.*love.*$/i -> :love
       message =~ ~r/^.*openhouse.*$/i -> :openhouse
