@@ -17,6 +17,8 @@ defmodule Officebot.Coffee do
   def handle_event(message = %{type: "message"}, slack, state) do
     if mention_me?(message.text, slack.me.id) do
       case parse_message(message.text) do
+        :jul -> send_message("༼ つ ◕_◕ ༽つ由 Merry Christmas everybody! :christmas_tree:", message.channel, slack)
+        {:ok, state}
         :table -> send_message("༼ づ ◉ Д ◉ ༽づ彡┻━━━━━┻", message.channel, slack)
         {:ok, state}
         {:exclude, person} ->
@@ -136,6 +138,7 @@ defmodule Officebot.Coffee do
 
     defp parse_message(message) do
       cond do
+        message =~ ~r/^.*christmas.*$/i -> :jul
         message =~ ~r/^.*mad.*$/i -> :table
         message =~ ~r/.*exclude ([a-z]*).*$/i ->
           res = Regex.run(~r/.*exclude ([a-z]*).*$/i, message)
