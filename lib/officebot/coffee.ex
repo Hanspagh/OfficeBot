@@ -105,7 +105,7 @@ defmodule Officebot.Coffee do
       if(Enum.member?(free, person)) do
         free = List.delete(free, person)
         used = used ++ [person]
-        {:ok, %{free: free, used: used}}
+        %{free: free, used: used}
       else
         {:error, "The person dosn't exists"}
       end
