@@ -139,12 +139,12 @@ defmodule Officebot.Coffee do
     defp parse_message(message) do
       cond do
         message =~ ~r/^.*christmas.*$/i -> :jul
-        message =~ ~r/^.*mad.*$/i -> :table
         message =~ ~r/.*exclude ([a-z]*).*$/i ->
           res = Regex.run(~r/.*exclude ([a-z]*).*$/i, message)
           {:exclude, Enum.at(res, 1)}
           message =~ ~r/^.*made.*$/i -> :made
           message =~ ~r/^.*love.*$/i -> :love
+          message =~ ~r/^.*mad.*$/i -> :table
           message =~ ~r/^.*openhouse.*$/i -> :openhouse
           message =~ ~r/^.*coffee.*$/i -> :coffee
           message =~ ~r/^.*kaffe.*$/i -> :coffee
