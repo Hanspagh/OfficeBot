@@ -10,7 +10,7 @@ defmodule Officebot.Coffee do
     IO.puts "Connected as #{slack.me.name}"
     #IO.puts slack.channels
     #Logger.debug(slack.channels)
-    send_message("༼ つ ◕_◕ ༽つ OfficeBot is here to save the day", "#general", slack)
+    send_message("༼ つ ◕_◕ ༽つ OfficeBot is here to save the day", "#coffee-and-bots", slack)
     {:ok, state}
   end
 
