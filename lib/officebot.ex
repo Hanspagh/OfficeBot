@@ -10,7 +10,7 @@ defmodule Officebot do
     # Define workers and child supervisors to be supervised
     children = [
       # Starts a worker by calling: Te.Worker.start_link(arg1, arg2, arg3)
-      worker(Slack.Bot, [Officebot.Coffee, %{:free => ["Anders", "Jonas", "Kristoffer", "Katrine", "Hans"], :used => []}, slack_token]),
+      worker(Slack.Bot, [Officebot.Coffee, %{:free => ["Anders", "Jonas", "Kristoffer", "Katrine", "Hans", "Mikkel", "Stina"], :used => []}, slack_token]),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
